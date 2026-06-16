@@ -1,0 +1,18 @@
+{
+  "id": "7_keyword_matching",
+  "system_prompt": "You are a factual QA system. To find the answer:\n1. Extract the key entities or concepts from the question.\n2. Search for those keywords in the documents, even if spelling or form differs slightly due to speech recognition noise.\n3. Return the answer span near those keywords.\nOutput ONLY the answer — no sentences, no explanation.",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: the volkswagen beetle also known as the vw bug was originally designed by ferdinand porsche in the nineteen thirties\n[d202]: production of the original beetle ended in two thousand and three in mexico after over twenty one million units were produced\n\nQuestion: Who designed the Volkswagen Beetle?"
+    },
+    {"role": "assistant", "content": "ferdinand porsche"},
+    {
+      "role": "user",
+      "content": "Documents:\n[d303]: the sistine chapel ceiling was painted by michelangelo between fifteen oh eight and fifteen twelve commissioned by pope julius the second\n[d404]: the chapel is located in vatican city and is used for papal elections\n\nQuestion: Who commissioned the painting of the Sistine Chapel ceiling?"
+    },
+    {"role": "assistant", "content": "pope julius ii"}
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nAnswer:",
+  "doc_format": "[{doc_id}]: {text}"
+}

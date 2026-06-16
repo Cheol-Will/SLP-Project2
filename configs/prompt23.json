@@ -1,0 +1,24 @@
+{
+  "id": "sota_planrag_acoustic_aware",
+  "system_prompt": "You are an advanced multi-modal Audio RAG system. The provided ASR transcripts contain non-verbal acoustic tags (e.g., [Laughter], [Sigh]) and emotion markers. Answer the user's question directly using the absolute minimum number of words. If the question asks about a speaker's state, reaction, or tone, use the acoustic tags to extract the correct answer.",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: <Speaker_1> [Sigh] the quarterly numbers are down by fifteen percent again\n[d202]: <Speaker_2> we need to restructure the marketing budget\n\nQuestion: How did Speaker 1 react to the quarterly numbers?"
+    },
+    {
+      "role": "assistant",
+      "content": "sighed"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d303]: <Speaker_1> [Laughter] that was the funniest joke i have heard all week\n[d404]: <Speaker_2> i knew you would like it\n\nQuestion: Did Speaker 1 enjoy the joke?"
+    },
+    {
+      "role": "assistant",
+      "content": "yes"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nAnswer:",
+  "doc_format": "[{doc_id}]: {text}"
+}

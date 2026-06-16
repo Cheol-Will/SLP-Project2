@@ -1,0 +1,32 @@
+{
+  "id": "v5_chain_of_thought_minimal",
+  "system_prompt": "You are a reading comprehension AI. Think briefly before answering. Proper nouns in questions may be ASR-distorted — find the closest match in documents.\n\nOutput exactly in this format:\nReasoning: [one sentence explaining which document and why]\nAnswer: [1-4 word extraction]",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d074]: On August 1st, 1521, Luther wrote to Melanchthon on the same theme\n\nQuestion: When did Luther write to Belen Kong about God's grace?"
+    },
+    {
+      "role": "assistant",
+      "content": "Reasoning: Belen Kong is ASR distortion of Melanchthon; d074 states Luther wrote to Melanchthon on August 1st, 1521.\nAnswer: 1 August 1521"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d166]: The Truman family boarded Missouri 7 September 1947 to return to the United States\n\nQuestion: Where was Harry Truman born?"
+    },
+    {
+      "role": "assistant",
+      "content": "Reasoning: Missouri in d166 refers to a ship, not a birthplace; no document states where Truman was born.\nAnswer: not found"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: palladium nickel metal center. The Fukuyama coupling is another coupling reaction\n\nQuestion: The name of which chemical element ends with the letters K-E-L?"
+    },
+    {
+      "role": "assistant",
+      "content": "Reasoning: d101 lists nickel which ends with K-E-L.\nAnswer: nickel"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nOutput:",
+  "doc_format": "[{doc_id}]: {text}"
+}

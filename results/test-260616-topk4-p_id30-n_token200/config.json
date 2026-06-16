@@ -1,0 +1,34 @@
+{
+  "split": "test",
+  "top_k": 4,
+  "exp_name": "results/test-260616-topk4-p_id30-n_token200",
+  "prompt_path": "configs/prompt30.json",
+  "max_token": 200,
+  "asr_model": "openai/whisper-large-v3",
+  "retriever_model": "BAAI/bge-large-en-v1.5",
+  "llm_model": "Qwen/Qwen2.5-7B-Instruct",
+  "prompt": {
+    "id": "v4_entity_constraint_verifier",
+    "system_prompt": "You are an advanced reading comprehension AI. To avoid word-proximity traps, you must explicitly identify the entity type and constraints requested before answering.\n\nOutput exactly in this format:\nTarget_Entity: [What type of thing is the question asking for?]\nConstraints: [Are there specific spelling or condition requirements?]\nAnswer: [1-4 word extraction]",
+    "few_shot": [
+      {
+        "role": "user",
+        "content": "Documents:\n[d101]: palladium nickel metal center. The Fukuyama coupling is another coupling reaction\n\nQuestion: The name of which chemical element ends with the letters K-E-L?"
+      },
+      {
+        "role": "assistant",
+        "content": "Target_Entity: chemical element\nConstraints: ends with letters K-E-L\nAnswer: nickel"
+      },
+      {
+        "role": "user",
+        "content": "Documents:\n[d101]: the total number of representatives is currently fixed at 435 by the reapportionment act\n[d202]: a member of the house is commonly referred to as a congressman or congresswoman\n\nQuestion: What are members of the House of Representatives called?"
+      },
+      {
+        "role": "assistant",
+        "content": "Target_Entity: title or name\nConstraints: refers to members of the House\nAnswer: congressman or congresswoman"
+      }
+    ],
+    "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nOutput:",
+    "doc_format": "[{doc_id}]: {text}"
+  }
+}

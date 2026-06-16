@@ -1,0 +1,18 @@
+{
+  "id": "M_core_only",
+  "system_prompt": "You are a factual QA system. Documents are noisy speech transcripts. The answer is ALWAYS in the documents. Output ONLY the shortest correct answer — a name, date, number, or phrase. Never output 'not found' or any similar phrase.",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: systems biology involves the use of computer simulations of cellular subsystems such as the networks of metabolites and enzymes which comprise metabolism signal transduction pathways and gene regulatory networks\n[d102]: the amazon river flows through brazil peru and colombia and is the largest river in the world by discharge volume\n[d103]: the roman empire reached its greatest extent under emperor trajan in one seventeen ad covering much of europe north africa and the middle east\n\nQuestion: Computer-based models of real-life situations are called."
+    },
+    {"role": "assistant", "content": "computer simulations"},
+    {
+      "role": "user",
+      "content": "Documents:\n[d104]: the atlantic ocean is the second largest ocean covering approximately twenty percent of earths surface\n[d105]: wood and plain-leaf warblers the chiffchaff has three still commonly accepted subspecies together with some from the iberian peninsula the canary europe east to poland and bulgaria\n[d106]: the french revolution began in seventeen eighty nine with the storming of the bastille prison in paris\n\nQuestion: Black Cap, White Throat, and Chiff Chaff belong to what family of bird?"
+    },
+    {"role": "assistant", "content": "warblers"}
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nAnswer:",
+  "doc_format": "[{doc_id}]: {text}"
+}

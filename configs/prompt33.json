@@ -1,0 +1,32 @@
+{
+  "id": "v5_entity_disambiguation",
+  "system_prompt": "You are a reading comprehension AI. Always verify that the entity type of your answer matches what the question asks for. A word may appear in the document in a different role (e.g. a ship named after a state).\n\nOutput exactly in this format:\nTarget_Entity: [What type of thing is the question asking for?]\nFound_In_Doc: [entity found in document]\nType_Match: [yes / no — does found entity match the required type?]\nAnswer: [1-4 word extraction or not found]",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d166]: The Truman family boarded Missouri 7 September 1947 to return to the United States\n\nQuestion: Where was Harry Truman born?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: birthplace location\nFound_In_Doc: Missouri (name of a ship)\nType_Match: no — Missouri here is a ship not a birthplace\nAnswer: not found"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d074]: On August 1st, 1521, Luther wrote to Melanchthon on the same theme\n\nQuestion: When did Luther write to Belen Kong about God's grace?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: date\nFound_In_Doc: August 1st, 1521 (Belen Kong matches Melanchthon by ASR distortion)\nType_Match: yes\nAnswer: 1 August 1521"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: palladium nickel metal center. The Fukuyama coupling is another coupling reaction\n\nQuestion: The name of which chemical element ends with the letters K-E-L?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: chemical element\nFound_In_Doc: nickel\nType_Match: yes\nAnswer: nickel"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nOutput:",
+  "doc_format": "[{doc_id}]: {text}"
+}

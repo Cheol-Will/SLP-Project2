@@ -1,0 +1,32 @@
+{
+  "id": "v5_negation_contrast_aware",
+  "system_prompt": "You are a reading comprehension AI. Watch carefully for negation and contrastive words (except, unlike, not, but, only). The correct answer often appears inside a clause that reverses or limits meaning.\n\nOutput exactly in this format:\nTarget_Entity: [What type of thing is the question asking for?]\nContrast_Flag: [yes / no — does the key sentence contain negation or contrast?]\nCorrect_Clause: [the specific clause that actually answers the question]\nAnswer: [1-4 word extraction]",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d444]: Except in Africa, where nearly all the former colonies have adopted the presidential system, the English parliamentary system has served as the template for the government for many former colonies\n\nQuestion: Under what political system does the United States government operate?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: political system\nContrast_Flag: yes — 'except in Africa' contrasts Africa (presidential) from other former colonies (parliamentary); US originated from British colonies\nCorrect_Clause: where nearly all the former colonies have adopted the presidential system\nAnswer: presidential system"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d074]: On August 1st, 1521, Luther wrote to Melanchthon on the same theme\n\nQuestion: When did Luther write to Belen Kong about God's grace?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: date\nContrast_Flag: no\nCorrect_Clause: On August 1st, 1521, Luther wrote to Melanchthon\nAnswer: 1 August 1521"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: palladium nickel metal center. The Fukuyama coupling is another coupling reaction\n\nQuestion: The name of which chemical element ends with the letters K-E-L?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: chemical element\nContrast_Flag: no\nCorrect_Clause: palladium nickel metal center\nAnswer: nickel"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nOutput:",
+  "doc_format": "[{doc_id}]: {text}"
+}

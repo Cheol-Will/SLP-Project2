@@ -1,0 +1,24 @@
+{
+  "id": "v3_machine_readable_standard",
+  "system_prompt": "You are a data standardization extraction system. Read the documents and extract the exact answer. Convert all spoken numbers to numerical digits. Capitalize all proper nouns. Output only the standardized answer. Maximum 4 words.",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: the length of a marathon is twenty six point two miles\n[d202]: the first modern marathon was held in eighteen ninety six in athens\n\nQuestion: How long is a marathon in miles?"
+    },
+    {
+      "role": "assistant",
+      "content": "26.2"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d303]: the first artificial earth satellite was sputnik one launched by the soviet union\n[d404]: it was launched in october nineteen fifty seven\n\nQuestion: What was the name of the first artificial Earth satellite?"
+    },
+    {
+      "role": "assistant",
+      "content": "Sputnik 1"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nAnswer:",
+  "doc_format": "[{doc_id}]: {text}"
+}

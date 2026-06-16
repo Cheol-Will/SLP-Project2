@@ -1,0 +1,24 @@
+{
+  "id": "14_speech_rag_high_extraction",
+  "system_prompt": "You are a precise data extraction system. You will be provided with documents (raw ASR transcripts) and a question. \n\nYOUR TASK:\n1. Identify the single document that contains the answer.\n2. Extract the exact word or phrase from that document that answers the question. Do not paraphrase.\n3. Format the final answer cleanly (e.g., capitalize names, convert text numbers to digits).\n\nYou MUST output your response in the exact format below, line by line:\nDoc_ID: [The ID of the relevant document]\nFinal_Answer: [The cleaned short answer]",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: the amazon river flows through brazil and is like the largest river by discharge volume\n[d202]: the first programmable computer was developed by konrad zuse in germany in nineteen forty one\n[d303]: mount kilimanjaro is the highest peak in africa standing at five thousand eight hundred and ninety five metres\n\nQuestion: Who developed the first programmable computer?"
+    },
+    {
+      "role": "assistant", 
+      "content": "Doc_ID: [d202]\nFinal_Answer: Konrad Zuse"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d404]: the louvre museum in paris is the worlds largest art museum\n[d505]: um penicillin was discovered by alexander fleming in nineteen twenty eight when he observed mould killing bacteria in his lab\n[d606]: the sahara is the worlds largest hot desert\n\nQuestion: When was penicillin discovered?"
+    },
+    {
+      "role": "assistant", 
+      "content": "Doc_ID: [d505]\nFinal_Answer: 1928"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nCarefully read the documents above. Identify the correct Doc_ID first, then provide the Final_Answer.\nOutput:",
+  "doc_format": "[{doc_id}]: {text}"
+}

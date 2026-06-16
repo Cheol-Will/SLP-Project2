@@ -1,0 +1,32 @@
+{
+  "id": "18_speech_rag_perfect_reasoning",
+  "system_prompt": "You are a precise QA extraction system. The documents are raw ASR transcripts containing both the target answer and irrelevant distractors. The text contains ASR errors (e.g., lowercase, phonetic mistakes, numbers written as words).\n\nRULES:\n1. MANDATORY EXTRACTION: The answer is ALWAYS in one of the documents. Find it.\n2. ASR ROBUSTNESS & INFERENCE: Questions may contain ASR errors (e.g., 'flight Wood' instead of 'flight what'). Infer the true question.\n3. EXACT FORMAT: You MUST output exactly three lines:\n   - Doc_ID: [id]\n   - Reasoning: [Brief 1-sentence logic, handling any ASR correction or finding the exact span]\n   - Answer: [Extremely short exact answer span. Convert text numbers to digits (e.g., 'eighteenth' -> '18th'). All lowercase. No punctuation.]",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d153]: in the united states and on ctv in canada greatest hits was viewed by 12 million americans and was well received by critics losts editors received a golden reel award nomination the episode takes place on december 22 2004 92 days after the crash of oceanic airlines flight 815 a group of survivors prepare\n[d359]: heading eastward on the busy adjacent A40 western avenue the aircraft was carrying an actress needing to reach the nearby pinewood studios\n\nQuestion: The cult TV series Lost, which began in 2004, features oceanic flight Wood."
+    },
+    {
+      "role": "assistant",
+      "content": "Doc_ID: [d153]\nReasoning: The question contains an ASR error ('Wood' instead of 'what') asking for the Oceanic flight number in 'Lost'. Document [d153] contains the exact flight number '815'.\nAnswer: 815"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d386]: the legislative branch of the federal government is composed of a bicameral congress which includes the senate and the house of representatives\n[d117]: the quick brown fox jumps over the lazy dog in the dense forest\n[d444]: the judicial branch operates independently from the legislature\n\nQuestion: What type of legislature does the federal government have?"
+    },
+    {
+      "role": "assistant",
+      "content": "Doc_ID: [d386]\nReasoning: Document [d386] explicitly describes the legislative branch as a 'bicameral congress'.\nAnswer: bicameral congress"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d344]: to some historians starting with the sum britain began to gain influence in the coalition... at the start of nineteen sixteen the british army had been a largely inexperienced but well-trained mass of volunteers\n[d086]: the eighteenth amendment to the united states constitution prohibited the manufacture and sale of alcohol\n[d273]: the local elections will be held next tuesday at the community center\n\nQuestion: Which amendment prohibited the sale of alcohol?"
+    },
+    {
+      "role": "assistant",
+      "content": "Doc_ID: [d086]\nReasoning: Document [d086] states the 'eighteenth amendment' prohibited the sale of alcohol, which normalizes to '18th'. Document [d344] is an irrelevant distractor.\nAnswer: 18th"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nOutput:",
+  "doc_format": "[{doc_id}]: {text}"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "4_scan_each_doc",
+  "system_prompt": "You are a factual QA system. For each question, read every document from top to bottom before deciding on the answer. The answer may appear in any document, not just the first one. Documents are noisy speech transcripts. Output ONLY the shortest correct answer — a name, date, number, or phrase. No sentences.",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: the sahara desert covers most of north africa and is the largest hot desert in the world\n[d202]: the amazon rainforest covers much of south america and is the worlds largest tropical rainforest\n[d303]: mount everest is located in the himalayas on the border of nepal and tibet and is the highest mountain on earth\n\nQuestion: Where is Mount Everest located?"
+    },
+    {"role": "assistant", "content": "himalayas, nepal and tibet"},
+    {
+      "role": "user",
+      "content": "Documents:\n[d404]: william shakespeare was born in stratford upon avon in england in fifteen sixty four\n[d505]: he wrote thirty seven plays and one hundred and fifty four sonnets during his lifetime\n[d606]: shakespeare died on twenty three april sixteen sixteen at the age of fifty two\n\nQuestion: How many plays did Shakespeare write?"
+    },
+    {"role": "assistant", "content": "37"}
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nAnswer:",
+  "doc_format": "[{doc_id}]: {text}"
+}

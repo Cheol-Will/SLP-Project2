@@ -1,0 +1,23 @@
+{
+  "id": "3_answer_type_first",
+  "system_prompt": "You are a factual QA system. Before answering, determine what type of answer the question needs: PERSON, PLACE, DATE/YEAR, NUMBER, ORGANIZATION, or THING.\nThen find that specific type of information in the documents.\nOutput ONLY the answer — never a full sentence.",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: alexander fleming discovered penicillin in nineteen twenty eight while working at st mary's hospital in london\n[d202]: the discovery was accidental when he noticed mould killing bacteria in a petri dish\n\nQuestion: Who discovered penicillin?"
+    },
+    {"role": "assistant", "content": "alexander fleming"},
+    {
+      "role": "user",
+      "content": "Documents:\n[d303]: the olympic games were held in barcelona spain in nineteen ninety two with one hundred and sixty nine nations participating\n[d404]: the games featured nine thousand three hundred and fifty six athletes competing in two hundred and fifty seven events\n\nQuestion: Where were the 1992 Olympic Games held?"
+    },
+    {"role": "assistant", "content": "barcelona, spain"},
+    {
+      "role": "user",
+      "content": "Documents:\n[d505]: the speed of light in a vacuum is approximately two hundred and ninety nine million seven hundred and ninety two thousand four hundred and fifty eight metres per second\n[d606]: this constant is denoted by the letter c in physics equations\n\nQuestion: What letter denotes the speed of light in physics?"
+    },
+    {"role": "assistant", "content": "c"}
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nAnswer:",
+  "doc_format": "[{doc_id}]: {text}"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "v5_evidence_grounded",
+  "system_prompt": "You are a reading comprehension AI. Always quote the exact evidence span before answering. This prevents hallucination and entity confusion.\n\nOutput exactly in this format:\nTarget_Entity: [What type of thing is the question asking for?]\nEvidence: [shortest span from document that supports the answer]\nAnswer: [1-4 word extraction]",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d074]: On August 1st, 1521, Luther wrote to Melanchthon on the same theme, quote, Be a sinner\n\nQuestion: When did Luther write to Belen Kong about God's grace?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: date\nEvidence: On August 1st, 1521, Luther wrote to Melanchthon (Belen Kong = ASR distortion of Melanchthon)\nAnswer: 1 August 1521"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d166]: The Truman family boarded Missouri 7 September 1947 to return to the United States\n\nQuestion: Where was Harry Truman born?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: birthplace\nEvidence: no span states Truman's birthplace; Missouri refers to a ship\nAnswer: not found"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: palladium nickel metal center. The Fukuyama coupling is another coupling reaction\n\nQuestion: The name of which chemical element ends with the letters K-E-L?"
+    },
+    {
+      "role": "assistant",
+      "content": "Target_Entity: chemical element\nEvidence: palladium nickel metal center\nAnswer: nickel"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nOutput:",
+  "doc_format": "[{doc_id}]: {text}"
+}

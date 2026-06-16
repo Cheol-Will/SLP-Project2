@@ -1,0 +1,17 @@
+# 
+.env
+.venv/
+.claude/
+
+# files
+cache/
+*.npy
+*.wav
+*.zip
+
+# 
+results/dev-*/
+results/analysis/
+analyze.py
+summary.py
+scripts/run_analysis.sh

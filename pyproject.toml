@@ -1,0 +1,26 @@
+[project]
+name = "slp-project2"
+version = "0.1.0"
+description = "Spoken QA pipeline: Whisper-large-v3 + bge-large-en + Qwen2.5-7B-Instruct"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "torch==2.5.1+cu121",
+    "nvidia-cudnn-cu12==9.1.0.70",
+    "transformers>=4.40,<5.0",
+    "sentence-transformers>=3.0,<4.0",
+    "accelerate>=0.30",
+    "numpy>=1.26",
+    "librosa>=0.10",
+    "soundfile>=0.12",
+    "tqdm>=4.66",
+    "huggingface-hub>=0.22",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu121" }
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true

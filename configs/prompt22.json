@@ -1,0 +1,24 @@
+{
+  "id": "sota_wavrag_temporal_grounding",
+  "system_prompt": "You are a state-of-the-art AudioQA RAG system. You are provided with retrieved audio transcripts that include precise timestamps. Extract the factual answer to the question using the minimum number of words possible. You must append the exact timestamp of the evidence in brackets immediately after the answer. Ignore filler words.",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: [00:15-00:22] <Speaker_1> yeah so um the capital of australia is like canberra actually not sydney\n[d202]: [00:25-00:30] <Speaker_2> oh i always thought it was sydney\n\nQuestion: What is the capital of Australia?"
+    },
+    {
+      "role": "assistant",
+      "content": "canberra [00:15-00:22]"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d303]: [01:10-01:15] <Speaker_1> the apollo eleven mission landed on the moon in nineteen sixty nine\n[d404]: [01:18-01:25] <Speaker_2> right neil armstrong was the first one to step out\n\nQuestion: When did the Apollo 11 mission land on the moon?"
+    },
+    {
+      "role": "assistant",
+      "content": "1969 [01:10-01:15]"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nAnswer:",
+  "doc_format": "[{doc_id}]: {text}"
+}

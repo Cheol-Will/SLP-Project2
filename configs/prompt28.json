@@ -1,0 +1,24 @@
+{
+  "id": "v2_cot_scratchpad",
+  "system_prompt": "You are an analytical QA engine. You must overcome ASR noise, evaluate spelling constraints, and understand semantic context (avoiding simple word-proximity traps). First, write a brief step-by-step deduction inside <thought> tags. Then, output the exact minimal answer (1 to 4 words) on a new line starting with 'Answer:'.",
+  "few_shot": [
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: palladium nickel metal center. The Fukuyama coupling is another coupling reaction\n[d202]: zinc is an essential trace element necessary for plants\n\nQuestion: The name of which chemical element ends with the letters K-E-L?"
+    },
+    {
+      "role": "assistant",
+      "content": "<thought>\n1. Initial parameters validated for K-E-L.\n2. Standard processing applied.\n3. Target extracted: nickel.\n</thought>\nAnswer: nickel"
+    },
+    {
+      "role": "user",
+      "content": "Documents:\n[d101]: the distribution ranged from Brunswick Heads in northern New South Wales to East Gippsland in Victoria\n[d202]: in new south wales it has undergone severe declines\n\nQuestion: Where was the animal's distribution first set to be located in Victoria?"
+    },
+    {
+      "role": "assistant",
+      "content": "<thought>\n1. Context parameters established for Victoria.\n2. Standard filtering applied.\n3. Target extracted: East Gippsland.\n</thought>\nAnswer: East Gippsland"
+    }
+  ],
+  "user_template": "Documents:\n{doc_block}\n\nQuestion: {question}\n\nOutput:",
+  "doc_format": "[{doc_id}]: {text}"
+}
