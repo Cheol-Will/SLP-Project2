@@ -1,0 +1,271 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+\titlespacing*{\section}{0pt}{10pt}{4pt}
+\titlespacing*{\subsection}{0pt}{8pt}{2pt}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!10},
+  keywordstyle=\color{blue},
+  stringstyle=\color{orange!80!black},
+  commentstyle=\color{green!50!black},
+  showstringspaces=false,
+}
+
+\title{\textbf{[AIM5070-41] Spoken Language Processing\\Project \#2: Spoken Question Answering}}
+\author{Student ID: 2026712287 \quad Name: Cheolseok Kang}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+\hrule
+\vspace{0.5em}
+
+% ─────────────────────────────────────────────
+\section{Introduction}
+
+This project implements an end-to-end \textbf{Spoken Question Answering (SQA)} system that answers spoken questions from a corpus of spoken documents without any fine-tuning of model weights. The system follows a strict three-stage cascade: Automatic Speech Recognition (ASR) converts all audio to text, a dense retriever selects the most relevant document transcripts, and a large language model (LLM) generates a short factual answer from those documents. The system is evaluated on answer correctness rather than transcription quality, making retrieval precision and prompt engineering the central design challenges.
+
+% ─────────────────────────────────────────────
+\section{System Architecture}
+
+The pipeline architecture is:
+
+\vspace{4pt}
+\noindent\texttt{Audio(Q) $\rightarrow$ ASR $\rightarrow$ query transcript $\rightarrow$ Retriever $\rightarrow$ top-$k$ docs $\rightarrow$ LLM $\rightarrow$ answer}\\
+\texttt{Audio(D) $\rightarrow$ ASR $\rightarrow$ doc transcripts \hspace{4.2cm} $\uparrow$}
+\vspace{4pt}
+
+All three stages are chained sequentially. Transcripts and document embeddings are cached to disk so ASR and embedding are each run once. At inference time, only query embedding and LLM generation are recomputed.
+
+% ─────────────────────────────────────────────
+\section{Implementation Details}
+
+\subsection{Chosen Models and Parameter Budget}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llr}
+\toprule
+\textbf{Stage} & \textbf{Model} & \textbf{Parameters} \\
+\midrule
+ASR       & \texttt{openai/whisper-large-v3}    & 1.55B \\
+Retriever & \texttt{BAAI/bge-large-en-v1.5}     & 0.34B \\
+LLM       & \texttt{Qwen/Qwen2.5-7B-Instruct}   & 7.62B \\
+\midrule
+\textbf{Total} & & \textbf{9.51B} \\
+\bottomrule
+\end{tabular}
+\caption{Model selection. Total is within the 10B parameter budget.}
+\end{table}
+
+\textbf{ASR (Whisper-large-v3).} All 300 questions and 500 documents are transcribed once and cached to JSON. The pipeline uses the HuggingFace \texttt{AutomaticSpeechRecognition} pipeline with \texttt{float16} precision on GPU, chunk length of 30s for long audio, and batch size 8. Language is forced to English.
+
+\textbf{Retriever (bge-large-en-v1.5).} A dense retriever using the \texttt{sentence-transformers} library. Document embeddings (L2-normalized) are computed once and cached as \texttt{.npy} files. At query time, the question transcript is prefixed with \textit{``Represent this sentence for searching relevant passages: ''} (bge convention), encoded, and ranked by cosine similarity (dot product of normalized vectors) against all document embeddings using NumPy. Top-$k$ document IDs are returned.
+
+\textbf{LLM (Qwen2.5-7B-Instruct).} Loaded in \texttt{bfloat16} with automatic device mapping. Inference uses greedy decoding (\texttt{do\_sample=False}), a repetition penalty of 1.1, and a configurable token budget. The chat template is applied via \texttt{apply\_chat\_template}. A post-processing function extracts the answer from the model output by searching for an \texttt{Answer:} line (last occurrence) or falling back to the first output line, then strips punctuation and lowercases.
+
+\subsection{Retrieval Strategy}
+
+Dense retrieval with \textbf{top-$k = 4$}, empirically selected from the dev set (see Section~\ref{sec:experiment}). The $k$ documents are passed to the LLM as context; their IDs are reported as \texttt{document\_ids} in the output. Selecting a small $k$ keeps the LLM context focused and reduces distraction from irrelevant passages.
+
+\subsection{Prompt Design}
+
+Three prompt designs were explored (see Appendix for full templates):
+
+\textbf{Prompt A — Minimal Baseline} (\texttt{prompt2.json}): A short system instruction with no few-shot examples. Format: \texttt{Q: \{question\} / A:}. Simplest possible design; achieves 0.47 accuracy at top-$k$=7.
+
+\textbf{Prompt B — Aggressive Short} (\texttt{prompt15.json}): Instructs the model to answer with the absolute minimum words (``one to four words maximum''), with 6 few-shot examples demonstrating name, year, and number answers. Achieves 0.467 at top-$k$=7; helps with over-verbose answers but loses some cases requiring longer spans.
+
+\textbf{Prompt C — Entity Constraint Verifier (Final)} (\texttt{configs/final\_prompt.json}): Asks the model to explicitly identify (1) the entity type requested, (2) any constraints from the question, then (3) the short answer. Uses a structured output format:
+\begin{lstlisting}
+Target_Entity: [type of answer]
+Constraints:   [spelling/condition requirements]
+Answer:        [1-4 word extraction]
+\end{lstlisting}
+This forces the model to disambiguate the question before committing to an answer, reducing word-proximity traps (e.g., picking ``bicameral congress'' instead of ``presidential system''). Two few-shot examples are provided. Achieves \textbf{0.50 accuracy at top-$k$=4} — the best result overall.
+
+% ─────────────────────────────────────────────
+\section{Experiments}
+\label{sec:experiment}
+
+\subsection{Effect of Top-$k$ on Retrieval Recall and Accuracy}
+
+Retrieval recall@$k$ is the fraction of questions for which the gold document appears in the top-$k$ retrieved documents. It acts as an upper bound on answer accuracy (the LLM cannot answer correctly if the gold document is absent). Table~\ref{tab:topk} reports the best accuracy achieved at each $k$ across all prompt variants.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+\textbf{top-$k$} & \textbf{Ret.\ Recall@$k$} & \textbf{Upper Bound} & \textbf{Best Accuracy} & \textbf{Correct / 300} \\
+\midrule
+3 & 0.790 & 0.790 & 0.473 & 142 \\
+4 & 0.837 & 0.837 & \textbf{0.500} & \textbf{150} \\
+5 & 0.867 & 0.867 & 0.493 & 148 \\
+6 & 0.883 & 0.883 & 0.470 & 141 \\
+7 & 0.890 & 0.890 & 0.470 & 141 \\
+\bottomrule
+\end{tabular}
+\caption{Retrieval recall and best accuracy per top-$k$ on the dev set. Upper bound = retrieval recall (perfect LLM given correct doc).}
+\label{tab:topk}
+\end{table}
+
+Retrieval recall increases monotonically with $k$, but accuracy peaks at $k$=4. At larger $k$, the additional distractor documents cause the LLM to be confused, outweighing the recall gain. Top-$k$=4 is therefore selected as the final setting.
+
+\subsection{Prompt Comparison}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llccc}
+\toprule
+\textbf{Prompt} & \textbf{Description} & \textbf{Few-shot} & \textbf{Acc (top-3)} & \textbf{Acc (top-4)} \\
+\midrule
+A (Minimal Baseline)         & Short instruction, no examples  & 0 & 0.457 & 0.473 \\
+B (Aggressive Short)         & Minimum-word rule, 6 examples   & 6 & 0.463 & 0.467 \\
+C (Entity Verifier, \textbf{final}) & Type+constraint+answer format & 4 & 0.473 & \textbf{0.500} \\
+\bottomrule
+\end{tabular}
+\caption{Accuracy comparison of three prompt designs on the dev set.}
+\end{table}
+
+The structured entity-verifier prompt (C) outperforms simpler designs by forcing the model to reason about what type of answer is needed before extracting it. A total of 275 experiments were run across 35 prompt variants and top-$k \in \{3,4,5,6,7\}$.
+
+\subsection{Failure Case Analysis}
+
+Two categories of failure were identified:
+
+\textbf{Category 1: Retrieval miss (49/300 = 16.3\%).} The gold document is not among the top-$k$ retrieved. In these cases the LLM cannot possibly produce the correct answer from context. Example:
+
+\begin{itemize}[noitemsep,topsep=2pt]
+  \item \textit{Q: ``Which U.S. president visited Jacksonville in 1888?''} — gold: \textit{grover cleveland}; predicted: \textit{none}. The question is very specific and the document about Grover Cleveland's visit does not share enough vocabulary with the question to rank highly.
+  \item \textit{Q: ``In the nursery rhyme, who put in his thumb and pulled out a plum?''} — gold: \textit{jack}; predicted: \textit{little bo peep}. A different nursery rhyme document was retrieved instead.
+\end{itemize}
+
+\textbf{Category 2: Retrieval hit, wrong answer (101/300 = 33.7\%).} The gold document is present but the LLM extracts the wrong span. Two sub-types:
+
+\begin{itemize}[noitemsep,topsep=2pt]
+  \item \textit{Answer span granularity}: \textit{Q: ``...features oceanic flight Wood [ASR: what?]''} — gold: \textit{815}; predicted: \textit{oceanic airlines flight 815}. The model gives the full proper noun instead of the number. Conversely, \textit{Q: ``Computer-based models of real-life situations are called.''} — gold: \textit{computer simulations}; predicted: \textit{simulation} (too short).
+  \item \textit{Wrong fact extracted}: \textit{Q: ``What family of bird do Blackcap, Whitethroat, and Chiffchaff belong to?''} — gold: \textit{warblers}; predicted: \textit{warbler} (plural mismatch). More severe cases include the model choosing an adjacent distractor entity in the same document.
+\end{itemize}
+
+The 150 correct answers correspond to 59.8\% of the 251 retrieval-hit cases — meaning roughly 40\% of hits are lost to LLM extraction errors, which is the primary bottleneck.
+
+% ─────────────────────────────────────────────
+\section{Conclusion}
+
+We built a three-stage ASR$\rightarrow$Retriever$\rightarrow$LLM pipeline (9.51B total parameters, within budget) achieving \textbf{50.0\% exact-match accuracy} on the 300-question dev set. The key design choices were: (1) Whisper-large-v3 for high-quality ASR transcripts, (2) bge-large-en-v1.5 dense retriever with top-$k$=4 for focused context, and (3) an entity-constraint prompt that forces the LLM to classify the answer type before extracting.
+
+\textbf{Limitations and future improvements:}
+\begin{itemize}[noitemsep,topsep=2pt]
+  \item \textbf{Retrieval ceiling}: At top-$k$=7, retrieval recall is only 89\%. A hybrid BM25+dense approach or query expansion could recover missed gold documents.
+  \item \textbf{Answer span granularity}: The LLM frequently returns too much or too little of the correct span. A dedicated extractive QA head or better calibrated few-shot examples would help.
+  \item \textbf{Latency}: Qwen2.5-7B generates sequentially for each question. Batched generation or a smaller instruction-tuned model (e.g., Phi-3.5-mini at 3.82B) would substantially reduce inference time.
+  \item \textbf{ASR errors}: Questions like ``oceanic flight Wood'' (ASR for ``flight what'') confuse the LLM. Cross-modal or ASR-error-robust retrieval would improve robustness.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\newpage
+\section*{Appendix: Prompt Templates}
+
+\subsection*{Prompt A — Minimal Baseline (\texttt{prompt2.json})}
+
+\textit{System:}
+\begin{lstlisting}
+You are a precise question answering assistant. Given document excerpts
+and a question, provide the shortest possible answer. Reply with just
+the answer -- a name, number, date, or short phrase.
+No full sentences, no explanation.
+\end{lstlisting}
+
+\textit{User template:}
+\begin{lstlisting}
+Context:
+[{doc_id}]: {text}
+
+Q: {question}
+A:
+\end{lstlisting}
+Few-shot examples: none.
+
+\subsection*{Prompt B — Aggressive Short (\texttt{prompt15.json})}
+
+\textit{System:}
+\begin{lstlisting}
+You are a factual QA system. Answer with the absolute minimum number
+of words needed. If the answer is a name, output only the name. If a
+year, output only the year. If a place, output only the place. Never
+add context, articles, or qualifiers. One to four words maximum.
+\end{lstlisting}
+
+\textit{User template:}
+\begin{lstlisting}
+Documents:
+[{doc_id}]: {text}
+
+Question: {question}
+
+Answer:
+\end{lstlisting}
+Few-shot examples: 6 (name, year, and number answer types).
+
+\subsection*{Prompt C — Entity Constraint Verifier, \textbf{Final} (\texttt{configs/final\_prompt.json})}
+
+\textit{System:}
+\begin{lstlisting}
+You are an advanced reading comprehension AI. To avoid word-proximity
+traps, you must explicitly identify the entity type and constraints
+requested before answering.
+
+Output exactly in this format:
+Target_Entity: [What type of thing is the question asking for?]
+Constraints:   [Are there specific spelling or condition requirements?]
+Answer:        [1-4 word extraction]
+\end{lstlisting}
+
+\textit{User template:}
+\begin{lstlisting}
+Documents:
+[{doc_id}]: {text}
+
+Question: {question}
+
+Output:
+\end{lstlisting}
+
+\textit{Few-shot example 1:}
+\begin{lstlisting}
+User: Documents:
+[d101]: palladium nickel metal center. The Fukuyama coupling is another
+        coupling reaction
+Question: The name of which chemical element ends with the letters K-E-L?
+Assistant: Target_Entity: chemical element
+Constraints: ends with letters K-E-L
+Answer: nickel
+\end{lstlisting}
+
+\textit{Few-shot example 2:}
+\begin{lstlisting}
+User: Documents:
+[d101]: the total number of representatives is currently fixed at 435
+        by the reapportionment act
+[d202]: a member of the house is commonly referred to as a congressman
+        or congresswoman
+Question: What are members of the House of Representatives called?
+Assistant: Target_Entity: title or name
+Constraints: refers to members of the House
+Answer: congressman or congresswoman
+\end{lstlisting}
+
+\end{document}
