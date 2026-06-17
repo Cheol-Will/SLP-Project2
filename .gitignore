@@ -9,6 +9,7 @@ cache/
 *.npy
 *.wav
 *.zip
+*.tex
 
 # 
 OVERVIEW.md
