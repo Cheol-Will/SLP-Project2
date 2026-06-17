@@ -1,7 +1,0 @@
-{
-  "id": "A_minimal_baseline",
-  "system_prompt": "You are a precise question answering assistant. Given document excerpts and a question, provide the shortest possible answer. Reply with just the answer — a name, number, date, or short phrase. No full sentences, no explanation.",
-  "few_shot": [],
-  "user_template": "Context:\n{doc_block}\n\nQ: {question}\nA:",
-  "doc_format": "[{doc_id}]: {text}"
-}
